@@ -9,6 +9,6 @@ type User struct {
 type UserRepository interface {
 	Create(user *User) error
 	List() ([]*User, error)
-	// FindByName(name string) (*User, error)
+	GetUserByName(name string) ([]*User, error)
 	// Deactivate() error
 }

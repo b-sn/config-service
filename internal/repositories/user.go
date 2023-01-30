@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/labstack/gommon/log"
 	"gorm.io/gorm"
 )
 
@@ -32,18 +33,27 @@ func (r *UserRepo) Create(user *models.User) error {
 	if result.Error != nil {
 		return fmt.Errorf("cannot save user: %v", result.Error)
 	}
-
 	return nil
 }
 
 func (r *UserRepo) List() ([]*models.User, error) {
 	var users []*models.User
-	result := r.db.Find(&users)
-	if result.Error != nil {
-		return []*models.User{}, fmt.Errorf("cannot select user list: %v", result.Error)
+	if err := r.db.Find(&users).Error; err != nil {
+		return nil, err
 	}
 	for _, user := range users {
 		user.Token = "*hidden*"
 	}
+	return users, nil
+}
+
+func (r *UserRepo) GetUserByName(name string) ([]*models.User, error) {
+	var users []*models.User
+	if result := r.db.Where("`user_name` = ?", name).Find(&users); result.Error != nil {
+		log.Errorf("cannot select user list: %v", result.Error)
+		return nil, fmt.Errorf("cannot select user list")
+	}
+	log.Panic(users)
+
 	return users, nil
 }

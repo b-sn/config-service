@@ -40,24 +40,26 @@ func AuthByIP(IPList []net.IPNet) echo.MiddlewareFunc {
 }
 
 // func AddUser(e echo.Context) error {
-// 	return e.JSON(http.StatusNotImplemented, response.ReturnErrorJSON(0, "Adding user is not implemented", nil))
+// 	return e.JSON(http.StatusNotImplemented, response.ReturnErrorJSON(0, "Adding user is not implemented"))
 // }
 
 func GetUser(e echo.Context) error {
-	return e.JSON(http.StatusNotImplemented, response.ReturnErrorJSON(0, "Getting user is not implemented", nil))
+	return e.JSON(http.StatusNotImplemented, response.ReturnErrorJSON(0, "Getting user is not implemented"))
 }
 
 func SetRouts(e *echo.Echo, dbConn *gorm.DB) {
 
 	dbConn.AutoMigrate(&models.User{})
 
+	// Working with users
 	userRepo := repositories.NewUserRepo(dbConn)
 	userHandler := controllers.NewUserHandler(userRepo)
 
 	user := e.Group("/users")
 	var ipList []net.IPNet
 	user.Use(AuthByIP(ipList))
-	user.POST("/:user_name", userHandler.AddUser)
+	user.POST("/:user_name", userHandler.CreateUser)
 	user.GET("/", userHandler.UserList)
-	user.GET("/:user_name", GetUser)
+	user.GET("/:user_name", userHandler.GetUserByName)
+
 }

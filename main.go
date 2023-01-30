@@ -1,12 +1,11 @@
 package main
 
 import (
+	"configer-service/internal/db"
 	"configer-service/internal/routing"
-	"log"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -15,14 +14,12 @@ func main() {
 
 	// Set number of requests per second
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(10)))
-	e.Use(middleware.Recover())
+	// e.Use(middleware.Recover())
+	e.Pre(middleware.AddTrailingSlash())
 	e.Use(middleware.Secure())
-	e.Use(middleware.Logger())
+	// e.Use(middleware.Logger())
 
-	dbConn, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
-	if err != nil {
-		log.Fatal(err)
-	}
+	dbConn := db.GetSQLiteConnection("gorm.db", &gorm.Config{})
 
 	routing.SetRouts(e, dbConn)
 
