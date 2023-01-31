@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"configer-service/internal/core"
 	"configer-service/internal/models"
 	"configer-service/internal/response"
 	"log"
@@ -10,71 +11,52 @@ import (
 )
 
 type UserHandler struct {
-	userRepo models.UserRepository
+	user core.UserServiceI
 }
 
-const (
-	paramsError     = 1001
-	createUserError = 1002
-)
-
-func NewUserHandler(userRepo models.UserRepository) *UserHandler {
+func NewUserHandler(userI core.UserServiceI) *UserHandler {
 	return &UserHandler{
-		userRepo: userRepo,
+		user: userI,
 	}
 }
 
-func (h *UserHandler) CreateUser(e echo.Context) error {
-	var user *models.User
+func (h UserHandler) CreateUser(e echo.Context) error {
+	user := &models.User{}
 	if err := h.bindUser(e, user); err != nil {
 		return err
 	}
-	if err := h.userRepo.Create(user); err != nil {
-		return e.JSON(
-			http.StatusInternalServerError,
-			response.ReturnErrorJSON(createUserError, "User creation error"))
+	if err := h.user.Create(user); err != nil {
+		return response.Error(e, err)
 	}
-	return e.JSON(http.StatusCreated, response.ReturnOkJSON(user)) // TODO: Check, probably here should be *user
+	return response.OK(e, http.StatusCreated, user)
 }
 
-func (h *UserHandler) UserList(e echo.Context) error {
-	users, err := h.userRepo.List()
+func (h UserHandler) GetUsersList(e echo.Context) error {
+	users, err := h.user.List()
 	if err != nil {
-		return e.JSON(
-			http.StatusInternalServerError,
-			response.ReturnErrorJSON(createUserError, "Getting user list error"))
+		return response.Error(e, err)
 	}
-	return e.JSON(http.StatusOK, response.ReturnOkJSON(users))
+	return response.OK(e, http.StatusOK, users)
 }
 
-func (h *UserHandler) GetUserByName(e echo.Context) error {
-	var user models.User
-	if err := h.bindUser(e, &user); err != nil {
-		// log.Fatalln(err)
+func (h UserHandler) GetUserByName(e echo.Context) error {
+	user := &models.User{}
+	if err := h.bindUser(e, user); err != nil {
 		return err
 	}
-	// log.Fatalln(user)
-	users, err := h.userRepo.GetUserByName(user.Name)
-	if err != nil {
-		return e.JSON(
-			http.StatusInternalServerError,
-			response.ReturnErrorJSON(createUserError, "Getting user list error"))
+	if err := h.user.Get(user); err != nil {
+		return response.Error(e, err)
 	}
-	log.Fatalln(users)
-
-	return e.JSON(http.StatusOK, response.ReturnOkJSON(users[0]))
+	return response.OK(e, http.StatusOK, user)
 }
 
-func (h *UserHandler) bindUser(e echo.Context, user *models.User) error {
-	// log.Println("0000001")
-	// var u models.User
-	if err := e.Bind(user); err != nil {
-		// log.Println("0000002")
-		return e.JSON(
-			http.StatusBadRequest,
-			response.ReturnErrorJSON(paramsError, "Param user_name error"))
+func (h UserHandler) bindUser(e echo.Context, user *models.User) error {
+	if user == nil {
+		log.Print("Warning: pointer to struct expected but nil got")
+		user = &models.User{}
 	}
-	// log.Println(user)
-	// log.Println("0000003")
+	if err := e.Bind(user); err != nil {
+		return response.Error(e, err)
+	}
 	return nil
 }

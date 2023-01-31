@@ -16,7 +16,7 @@ func main() {
 	e.Use(middleware.RateLimiter(middleware.NewRateLimiterMemoryStore(10)))
 	// e.Use(middleware.Recover())
 	e.Pre(middleware.AddTrailingSlash())
-	e.Use(middleware.Secure())
+	// e.Use(middleware.Secure())
 	// e.Use(middleware.Logger())
 
 	dbConn := db.GetSQLiteConnection("gorm.db", &gorm.Config{})

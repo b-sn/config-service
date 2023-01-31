@@ -1,6 +1,7 @@
 package db
 
 import (
+	"configer-service/internal/models"
 	"log"
 
 	"gorm.io/driver/sqlite"
@@ -12,5 +13,8 @@ func GetSQLiteConnection(fileName string, cfg *gorm.Config) *gorm.DB {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	dbConn.AutoMigrate(&models.User{})
+
 	return dbConn
 }

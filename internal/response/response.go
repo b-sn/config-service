@@ -1,10 +1,13 @@
 package response
 
 import (
+	"configer-service/internal/custom"
 	"configer-service/internal/models"
+
 	"net/http"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/gommon/log"
 )
 
 type JSONResponseBase struct {
@@ -20,12 +23,12 @@ type JSONResponseDefault struct {
 
 type JSONResponseUser struct {
 	JSONResponseBase
-	User models.User `json:"user,omitempty"`
+	User *models.User `json:"user,omitempty"`
 }
 
 type JSONResponseUsers struct {
 	JSONResponseBase
-	Users []models.User `json:"users"`
+	Users []*models.User `json:"users"`
 }
 
 func ReturnOkJSON(i interface{}) interface{} {
@@ -33,12 +36,12 @@ func ReturnOkJSON(i interface{}) interface{} {
 		Status: "OK",
 	}
 	switch data := i.(type) {
-	case models.User:
+	case *models.User:
 		return JSONResponseUser{
 			JSONResponseBase: base,
 			User:             data,
 		}
-	case []models.User:
+	case []*models.User:
 		return JSONResponseUsers{
 			JSONResponseBase: base,
 			Users:            data,
@@ -51,17 +54,65 @@ func ReturnOkJSON(i interface{}) interface{} {
 	}
 }
 
-func ReturnErrorJSON(errCode int, errMsg string) interface{} {
-	response := JSONResponseBase{
-		Status: "Error",
+func getStatus(err error) int {
+	switch err.(type) {
+
+	case custom.DuplicateError:
+		return http.StatusConflict
+
+	case custom.RequestError:
+		return http.StatusBadRequest
+
+	case custom.NotFoundError:
+		return http.StatusNotFound
+
+	default:
+		return http.StatusInternalServerError
+
 	}
-	if errCode != 0 {
-		response.ErrorCode = errCode
+}
+
+func getErrorMessage(err error) string {
+	if err == nil || err.Error() == "" {
+		return http.StatusText(getStatus(err))
 	}
-	if errMsg != "" {
-		response.Message = errMsg
+	return err.Error()
+}
+
+func Error(e echo.Context, err error) error {
+	return e.JSON(
+		getStatus(err),
+		JSONResponseBase{
+			Status:  "Error",
+			Message: getErrorMessage(err),
+		},
+	)
+}
+
+func OK(e echo.Context, status int, i interface{}) error {
+	if status >= 400 || http.StatusText(status) == "" {
+		log.Errorf("wrong HTTP status for success response: %d", status)
 	}
-	return response
+	base := JSONResponseBase{
+		Status: "OK",
+	}
+	switch data := i.(type) {
+	case *models.User:
+		return e.JSON(status, JSONResponseUser{
+			JSONResponseBase: base,
+			User:             data,
+		})
+	case []*models.User:
+		return e.JSON(status, JSONResponseUsers{
+			JSONResponseBase: base,
+			Users:            data,
+		})
+	default:
+		return e.JSON(status, JSONResponseDefault{
+			JSONResponseBase: base,
+			Data:             data,
+		})
+	}
 }
 
 func ReturnDefault404() error {

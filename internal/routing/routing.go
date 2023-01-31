@@ -2,7 +2,7 @@ package routing
 
 import (
 	"configer-service/internal/controllers"
-	"configer-service/internal/models"
+	"configer-service/internal/core"
 	"configer-service/internal/repositories"
 	"configer-service/internal/response"
 	"net"
@@ -39,27 +39,18 @@ func AuthByIP(IPList []net.IPNet) echo.MiddlewareFunc {
 	}
 }
 
-// func AddUser(e echo.Context) error {
-// 	return e.JSON(http.StatusNotImplemented, response.ReturnErrorJSON(0, "Adding user is not implemented"))
-// }
-
-func GetUser(e echo.Context) error {
-	return e.JSON(http.StatusNotImplemented, response.ReturnErrorJSON(0, "Getting user is not implemented"))
-}
-
 func SetRouts(e *echo.Echo, dbConn *gorm.DB) {
-
-	dbConn.AutoMigrate(&models.User{})
 
 	// Working with users
 	userRepo := repositories.NewUserRepo(dbConn)
-	userHandler := controllers.NewUserHandler(userRepo)
+	userService := core.NewUserService(userRepo)
+	userHandler := controllers.NewUserHandler(userService)
 
 	user := e.Group("/users")
 	var ipList []net.IPNet
 	user.Use(AuthByIP(ipList))
 	user.POST("/:user_name", userHandler.CreateUser)
-	user.GET("/", userHandler.UserList)
+	user.GET("/", userHandler.GetUsersList)
 	user.GET("/:user_name", userHandler.GetUserByName)
 
 }
