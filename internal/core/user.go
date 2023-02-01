@@ -9,7 +9,7 @@ import (
 	"github.com/labstack/gommon/log"
 )
 
-const hiddenTokenReplace = "*hidden*"
+const hiddenUserTokenReplace = "*hidden*"
 
 type UserServiceI interface {
 	Create(*models.User) error
@@ -56,7 +56,7 @@ func (u userService) List() ([]*models.User, error) {
 		return nil, errors.New("unexpected user list error, see logs")
 	}
 	for _, user := range users {
-		user.Token = hiddenTokenReplace
+		user.Token = hiddenUserTokenReplace
 	}
 	return users, nil
 }

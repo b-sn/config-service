@@ -20,7 +20,7 @@ func NewUserRepo(db *gorm.DB) *UserRepo {
 	}
 }
 
-func (r *UserRepo) Create(user *models.User) error {
+func (r UserRepo) Create(user *models.User) error {
 	user.IsActive = true
 	user.Token = base64.StdEncoding.EncodeToString(utils.GenerateRandData(64))
 	if err := r.db.Create(user).Error; err != nil {
@@ -29,7 +29,7 @@ func (r *UserRepo) Create(user *models.User) error {
 	return nil
 }
 
-func (r *UserRepo) Find(user *models.User) ([]*models.User, error) {
+func (r UserRepo) Find(user *models.User) ([]*models.User, error) {
 	var users []*models.User
 	if err := r.db.Where(user).Find(&users).Error; err != nil {
 		return nil, err
@@ -37,7 +37,7 @@ func (r *UserRepo) Find(user *models.User) ([]*models.User, error) {
 	return users, nil
 }
 
-func (r *UserRepo) Get(user *models.User) error {
+func (r UserRepo) Get(user *models.User) error {
 	if err := r.db.Where(user).Take(user).Error; err != nil {
 		if !errors.Is(err, gorm.ErrRecordNotFound) {
 			return fmt.Errorf("error while select user: %v", err)

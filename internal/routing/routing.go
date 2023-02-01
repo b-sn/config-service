@@ -53,4 +53,12 @@ func SetRouts(e *echo.Echo, dbConn *gorm.DB) {
 	user.GET("/", userHandler.GetUsersList)
 	user.GET("/:user_name", userHandler.GetUserByName)
 
+	// Working with application
+	appRepo := repositories.NewAppRepo(dbConn)
+	appService := core.NewAppService(appRepo)
+	appHandler := controllers.NewAppHandler(appService)
+
+	app := e.Group("/applications")
+	app.POST("/:app_name", appHandler.)
+
 }

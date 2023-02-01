@@ -11,7 +11,5 @@ type UserRepository interface {
 	Create(user *User) error
 	Get(user *User) error
 	Find(user *User) ([]*User, error)
-	// List() ([]*User, error)
-	// GetUserByName(user *User) error
 	// Deactivate() error
 }
