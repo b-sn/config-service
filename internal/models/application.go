@@ -1,6 +1,7 @@
 package models
 
-type Application struct {
+type App struct {
+	ID       uint
 	Name     string
 	User     *User
 	Token    string
@@ -8,9 +9,10 @@ type Application struct {
 }
 
 type AppRepository interface {
-	Create(name string, user *User) (*Application, error)
-	FindByName(name string) (*Application, error)
-	FindByToken(token string) (*Application, error)
-	Update(params map[string]string) error
-	Deactivate() error
+	Create(app *App) error
+	Get(app *App) error
+	// FindByName(name string) (*App, error)
+	// FindByToken(token string) (*App, error)
+	// Update(params map[string]string) error
+	// Deactivate() error
 }
