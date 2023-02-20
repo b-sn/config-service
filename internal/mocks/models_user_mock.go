@@ -5,7 +5,7 @@
 package modelsUserMocks
 
 import (
-	models "configer-service/internal/models"
+	models "configer-service/internal/model"
 	reflect "reflect"
 
 	gomock "github.com/golang/mock/gomock"

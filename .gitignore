@@ -19,3 +19,6 @@
 
 # Databases
 *.db
+
+# Configs
+*.yml

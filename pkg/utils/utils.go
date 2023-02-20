@@ -2,18 +2,32 @@ package utils
 
 import (
 	"crypto/rand"
+	"encoding/json"
 	"fmt"
-	"log"
+	"net"
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+	"github.com/sirupsen/logrus"
 )
 
-func PrintDebug(variable interface{}, comment string) {
+func PrintDebug(variable any, comment string) {
 	fmt.Printf("!!! %s => %#v\n", comment, variable)
 }
 
 func GenerateRandData(length int) []byte {
 	res := make([]byte, length)
 	if _, err := rand.Read(res); err != nil {
-		log.Fatalf("cannot generate token: %v", err)
+		logrus.Fatalf("cannot generate token: %v", err)
 	}
 	return res
+}
+
+func GetIP(req *http.Request) net.IP {
+	return net.ParseIP(echo.ExtractIPDirect()(req))
+}
+
+func PrettyPrint(i any) string {
+	s, _ := json.MarshalIndent(i, "", "\t")
+	return string(s)
 }

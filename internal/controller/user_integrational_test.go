@@ -1,11 +1,13 @@
-package controllers
+package controller
 
 import (
 	"configer-service/internal/core"
+	"configer-service/internal/custom"
 	"configer-service/internal/db"
-	"configer-service/internal/repositories"
+	"configer-service/internal/repository"
 	"configer-service/internal/response"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -22,16 +24,13 @@ var testToken string
 const testUserName = "test_user"
 
 func TestMain(m *testing.M) {
-	const test_db_file = "test.db"
+	const test_db_file = "test_123.db"
 	os.Remove(test_db_file)
 
 	dbConn := db.GetSQLiteConnection(test_db_file, &gorm.Config{})
-	userRepo := repositories.NewUserRepo(dbConn)
-	userService := core.NewUserService(userRepo)
+	userRepo := repository.NewUserRepo(dbConn)
+	userService := core.NewUserService(userRepo, "SuperSecretString")
 	handler = NewUserHandler(userService)
-
-	// userRepo := repositories.NewUserRepo(dbConn)
-	// handler = NewUserHandler(userRepo)
 
 	code := m.Run()
 
@@ -44,7 +43,11 @@ func TestMain(m *testing.M) {
 
 func getContextAndRecorder(method string) (echo.Context, *httptest.ResponseRecorder) {
 	rec := httptest.NewRecorder()
-	ctx := echo.New().NewContext(
+
+	e := echo.New()
+	e.Validator = custom.NewCustomValidator()
+
+	ctx := e.NewContext(
 		httptest.NewRequest(method, "/", nil),
 		rec,
 	)
@@ -90,6 +93,7 @@ func TestGetUserByName(t *testing.T) {
 	if assert.NoError(t, handler.GetUserByName(ctx)) {
 		assert.Equal(t, http.StatusOK, rec.Code)
 
+		fmt.Println(rec.Body.String())
 		var respData response.JSONResponseUser
 		json.Unmarshal(rec.Body.Bytes(), &respData)
 		assert.Equal(t, "OK", respData.Status)
