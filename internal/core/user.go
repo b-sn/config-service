@@ -34,7 +34,7 @@ func NewUserService(r repository.UserI, secret string) userService {
 
 func (u userService) Create(user *model.User) error {
 
-	if userExists, err := u.repo.Exists(*user); err != nil {
+	if userExists, err := u.repo.Exists(user.Name); err != nil {
 		LogUserError(user, err, "getting user error")
 		return errors.New("unexpected get user error, see logs")
 	} else if userExists {

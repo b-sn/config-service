@@ -35,7 +35,7 @@ func (c ConfigHandler) CreateConfig(ctx echo.Context) error {
 		return ctx.JSON(response.Error(err))
 	}
 
-	return ctx.JSON(response.OKApp(http.StatusOK, app))
+	return ctx.JSON(response.OKConfig(http.StatusOK, cfgReq))
 
 }
 

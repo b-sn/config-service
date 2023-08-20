@@ -35,7 +35,7 @@ func (a AppRepo) Create(app *model.App) error {
 	app.ID = uuid.NewString()
 	// app.Token = base64.StdEncoding.EncodeToString(utils.GenerateRandData(64))
 	if err := a.db.Create(app).Error; err != nil {
-		return fmt.Errorf("cannot save app: %v", err)
+		return fmt.Errorf("cannot add application to DB: %v", err)
 	}
 	return nil
 }

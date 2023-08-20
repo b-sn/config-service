@@ -22,3 +22,6 @@
 
 # Configs
 *.yml
+
+*.crt
+*.key

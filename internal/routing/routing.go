@@ -40,11 +40,15 @@ func SetRouts(e *echo.Echo, dbConn *gorm.DB, cfg structs.Secure) {
 
 	// Working with application
 	appRepo := repository.NewAppRepo(dbConn)
-	appService := core.NewAppService(appRepo, userRepo, cfg.AppTokenSecret)
+	appService := core.NewAppService(appRepo, cfg.AppTokenSecret) // userRepo,
 	appHandler := controller.NewAppHandler(appService)
 
 	app := e.Group("/applications")
-	app.Use(echoutils.AuthorizeUser([]byte(cfg.UserTokenSecret)))
+	if cfg.SingleUserMode {
+		app.Use(echoutils.AuthorizeSingleUser())
+	} else {
+		app.Use(echoutils.AuthorizeUser([]byte(cfg.UserTokenSecret), userRepo))
+	}
 	app.POST("/:app_name", appHandler.CreateApp)
 	app.GET("/:app_name", appHandler.GetAppByName)
 
@@ -54,6 +58,10 @@ func SetRouts(e *echo.Echo, dbConn *gorm.DB, cfg structs.Secure) {
 	cfgHandler := controller.NewConfigHandler(cfgService)
 
 	config := e.Group("/config")
-	config.Use(echoutils.AuthorizeUser([]byte(cfg.UserTokenSecret)))
+	if cfg.SingleUserMode {
+		config.Use(echoutils.AuthorizeSingleUser())
+	} else {
+		config.Use(echoutils.AuthorizeUser([]byte(cfg.UserTokenSecret), userRepo))
+	}
 	config.POST("/:app_name/:env_name", cfgHandler.CreateConfig)
 }

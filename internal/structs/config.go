@@ -5,9 +5,10 @@ type DatabaseConfig struct {
 }
 
 type Secure struct {
-	UserTokenSecret string
-	AppTokenSecret  string
 	AllowedIP       []string
+	AppTokenSecret  string
+	SingleUserMode  bool
+	UserTokenSecret string
 }
 
 type CfgData struct {

@@ -73,6 +73,15 @@ func AuthorizeUser(userSecret []byte, userRepo repository.UserI) echo.Middleware
 	}
 }
 
+func AuthorizeSingleUser() echo.MiddlewareFunc {
+	return func(next echo.HandlerFunc) echo.HandlerFunc {
+		return func(ctx echo.Context) error {
+			ctx.Set("user_id", uuid.Nil)
+			return next(ctx)
+		}
+	}
+}
+
 func ReturnDefault404() error {
 	return echo.NewHTTPError(http.StatusNotFound)
 }

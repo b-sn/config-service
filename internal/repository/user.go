@@ -17,6 +17,7 @@ type UserRepo struct {
 type UserI interface {
 	Create(user *model.User) error
 	Get(user *model.User) error
+	Exists(userName string) (bool, error)
 	ExistsAndActive(userID string) (bool, error)
 	Find(user *model.User) ([]*model.User, error)
 	// Deactivate() error
@@ -59,6 +60,19 @@ func (r UserRepo) ExistsAndActive(userID string) (bool, error) {
 	user := model.User{
 		ID:       userID,
 		IsActive: true,
+	}
+	if err := r.db.Where(&user).Take(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+		return false, fmt.Errorf("error while select user: %w", err)
+	}
+	return true, nil
+}
+
+func (r UserRepo) Exists(name string) (bool, error) {
+	user := model.User{
+		Name: name,
 	}
 	if err := r.db.Where(&user).Take(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
